@@ -129,11 +129,11 @@ class Unet(tf.keras.Model):
         output_channels : int
             Number of output channels
         kernel_size : int or tuple of ints
-            Kernel size for each dimension, default: (3,3,3)
+            Kernel size for each dimension, default: (3,3)
         kernel_center : int or tuple of ints
             Kernel center for each dimension, default: kernel_size//2
         strides : tuple of ints
-            Strides for each dimension, default: (2,2,2)
+            Strides for each dimension, default: (2,2)
         filters_mult: int
             Multiplicative increase to filter size per stack depth
 

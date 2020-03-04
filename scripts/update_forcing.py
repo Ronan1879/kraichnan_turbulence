@@ -2,13 +2,16 @@
 
 import unet
 import numpy as np
-from parameters_ml import *
+from ml_parameters import *
 import post as post_tools
 import tensorflow as tf
 tf.enable_eager_execution()
 import xarray
 
 model = unet.Unet(stacks,stack_width,filters_base,output_channels,strides=(2,2), **unet_kw)
+
+# Loads the weights
+model.load_weights("checkpoints/unet-1000.index")
 
 # Define cost function
 def array_of_tf_components(tf_tens):
@@ -35,7 +38,7 @@ def deviatoric_part(tens):
         tens_d[i, i] = tens[i, i] - tr_tens / N
     return tens_d
 
-def update_forcing(ux,uy,Fx,Fy,domain):
+def update_forcing(ux,uy,domain):
 
     txx = domain.new_field(name='txx')
     tyy = domain.new_field(name='tyy')
@@ -50,8 +53,6 @@ def update_forcing(ux,uy,Fx,Fy,domain):
 
     inputs = np.moveaxis(np.array(S), 0, -1)[None]
 
-    #inputs,labels = load_data(1)
-    #print(inputs.shape)
     tf_inputs = [tf.cast(inputs,datatype)]
     tf_outputs = model.call(tf_inputs)
 
@@ -62,6 +63,7 @@ def update_forcing(ux,uy,Fx,Fy,domain):
     tyx['g'] = tau_pred[1,0]
     tyy['g'] = tau_pred[1,1]
 
-    Fx = (dx(txx) + dy(tyx)).evaluate()
-    Fy = (dx(txy) + dy(tyy)).evaluate()
+    Fx_temp = (dx(txx) + dy(tyx)).evaluate()
+    Fy_temp = (dx(txy) + dy(tyy)).evaluate()
 
+    return Fx_temp['g'],Fy_temp['g']

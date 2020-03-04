@@ -35,16 +35,16 @@ while os.path.exists("./snapshots/snapshots_s%s.h5" % i):
     i += 1
 
 n_sets = i
-print(n_sets)
-for j in range(40,n_sets):
+for j in range(1,n_sets):
 	with h5py.File("snapshots/snapshots_s{}.h5".format(j), mode='r') as file:
 
 		w = file['tasks']['w']
 		t = file['scales']['sim_time']
 		vorticity.append(np.array(w)[0])
+		print(vorticity.shape)
+
 
 vorticity = np.array(vorticity)
-
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111)
 

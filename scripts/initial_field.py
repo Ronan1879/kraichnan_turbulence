@@ -10,7 +10,7 @@ import pathlib
 
 from dedalus import public as de
 from dedalus.extras import flow_tools
-import parameters as param
+import sim_parameters as param
 
 # Create bases and domain
 x_basis = de.Fourier('x', param.N, interval=(param.Bx[0], param.Bx[1]), dealias=1)
@@ -27,8 +27,8 @@ k = np.sqrt(k[0]**2 + k[1]**2)
 w = domain.new_field(name='w')
 w['g'] = np.random.normal(0,1,(x.shape[0],y.shape[1]))
 # Small term in division by k is included to avoid blow up at k = 0
-w['c'] = w['c']/(k+0.0000001)**(3/5)
-w['g'] = 500*(w['g']-np.mean(w['g']))
+w['c'] = w['c']/(k+0.0000001)**(2)
+w['g'] = 10*(w['g']-np.mean(w['g']))
 
 problem = de.LBVP(domain, variables=['psi'])
 

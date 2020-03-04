@@ -10,8 +10,8 @@ Feb. 29th 2020
 
 import os
 import sys
-import parameters as param
-import parameters_ml as param_ml
+import sim_parameters as param
+import ml_parameters as param_ml
 
 sim_type = sys.argv[1]
 
@@ -30,17 +30,15 @@ text_file.write("Re = "+str(param.Re)+'\n')
 text_file.write("V = "+str(param.V)+'\n')
 text_file.write("k = "+str(param.k)+'\n')
 text_file.write("ν = "+str(param.ν)+'\n')
-text_file.write("Fx = "+str(param.Fx)+'\n')
-text_file.write("Fy = "+str(param.Fy)+'\n')
 text_file.write("dt = "+str(param.dt)+'\n')
 text_file.write("stop_iteration = "+str(param.stop_iteration)+'\n')
 text_file.write("snapshots_iter = "+str(param.snapshots_iter)+'\n')
 text_file.write("slices_iter = "+str(param.slices_iter)+'\n')
-text_file.write("scalars_iter = "+str(param.scalars_iter)+'\n')
+text_file.write("scalars_iter = "+str(param.scalars_iter)+'\n\n')
 
 if str(sim_type) == "ml":
 	# Net and training parameters
-	text_file.write("stacks = "+str(param_ml.stack)+'\n')
+	text_file.write("stacks = "+str(param_ml.stacks)+'\n')
 	text_file.write("stack width = "+str(param_ml.stack_width)+'\n')
 	text_file.write("filters base = "+str(param_ml.filters_base)+'\n')
 	text_file.write("output channels = "+str(param_ml.output_channels)+'\n')
@@ -49,7 +47,7 @@ if str(sim_type) == "ml":
 	text_file.write("use bias = "+str(param_ml.unet_kw['use_bias'])+'\n')
 	text_file.write("batch norm = "+str(param_ml.unet_kw['batch_norm'])+'\n')
 	text_file.write("restore epoch = "+str(param_ml.restore_epoch)+'\n')
-	text_file.write("epochs = "+str(param_ml.epochs.)+'\n')
+	text_file.write("epochs = "+str(param_ml.epochs)+'\n')
 	text_file.write("snapshots = "+str(param_ml.snapshots)+'\n')
 	text_file.write("testing size = "+str(param_ml.testing_size)+'\n')
 	text_file.write("learning rate = "+str(param_ml.learning_rate)+'\n')

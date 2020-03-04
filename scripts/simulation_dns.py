@@ -7,8 +7,8 @@ import os
 
 from dedalus import public as de
 from dedalus.extras import flow_tools
-import parameters as param
-import initial_velocity_field as ivf
+import sim_parameters as param
+import initial_field as init_f
 
 import logging
 logger = logging.getLogger(__name__)
@@ -22,8 +22,8 @@ domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64, mesh=param.mesh)
 # Problem
 problem = de.IVP(domain, variables=['p','ux','uy'])
 problem.parameters['ν'] = param.ν
-problem.parameters['Fx'] = param.Fx
-problem.parameters['Fy'] = param.Fy
+problem.parameters['Fx'] = 0
+problem.parameters['Fy'] = 0
 problem.substitutions['ωz'] = "dx(uy) - dy(ux)"
 problem.substitutions['ke'] = "(ux*ux + uy*uy) / 2"
 problem.substitutions['en'] = "(ωz*ωz) / 2"
@@ -45,8 +45,8 @@ uy = solver.state['uy']
 if pathlib.Path('restart.h5').exists():
     solver.load_state('restart.h5', -1)
 else:
-    ux['g'] = ivf.ux_init
-    uy['g'] = ivf.uy_init
+    ux['g'] = init_f.ux_init
+    uy['g'] = init_f.uy_init
 
 # Integration parameters
 solver.stop_sim_time = param.stop_sim_time
@@ -60,6 +60,7 @@ i -= 1
 # Analysis
 snapshots = solver.evaluator.add_file_handler('./simulation_dns_%s/snapshots' % i, iter=param.snapshots_iter, max_writes=1, mode='overwrite')
 snapshots.add_system(solver.state)
+snapshots.add_task("dx(uy)-dy(ux)",name='w')
 
 scalars = solver.evaluator.add_file_handler('./simulation_dns_%s/scalars' % i, iter=param.scalars_iter, max_writes=100, mode='overwrite')
 scalars.add_task("integ(ke)", name='KE')

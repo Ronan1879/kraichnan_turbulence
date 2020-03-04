@@ -33,8 +33,6 @@ y_array = np.linspace(-1,1,vorticity.shape[2])
 x,y = np.meshgrid(x_array,y_array)
 quadmesh = ax.pcolormesh(x_array,y_array,vorticity[0,:,:],cmap='jet')
 plt.colorbar(quadmesh)
-#cax = ax.imshow(vorticity[0,:,:],cmap='jet')
-#ax.colorbar(cax)
 
 ax.set_xlabel("x",fontsize=14)
 ax.set_ylabel("y",fontsize=14)
@@ -47,6 +45,6 @@ def animate(i):
 anim = FuncAnimation(fig, animate, interval=100, frames=n_sets-1, repeat=True,blit=False,save_count=n_sets-1)
 
 
-anim.save('simulation_12.mp4')
+anim.save('simulation_13.mp4')
 
 

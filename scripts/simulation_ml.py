@@ -7,9 +7,9 @@ import os
 
 from dedalus import public as de
 from dedalus.extras import flow_tools
-import parameters_sim as param
-import initial_velocity_field as ivf
-import machine_learning as ml
+import sim_parameters as param
+import initial_field as init_f
+import update_forcing as uf
 import logging
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ problem.substitutions['ke'] = "(ux*ux + uy*uy) / 2"
 problem.substitutions['en'] = "(ωz*ωz) / 2"
 problem.substitutions['L(a)'] = "dx(dx(a)) + dy(dy(a))"
 problem.substitutions['A(a)'] = "ux*dx(a) + uy*dy(a)"
-problem.add_equation("dt(ux) - ν*L(ux) + dx(p) = -A(ux) + Fx")
-problem.add_equation("dt(uy) - ν*L(uy) + dy(p) = -A(uy) + Fy")
+problem.add_equation("dt(ux) - ν*L(ux) + dx(p) = -A(ux) - Fx")
+problem.add_equation("dt(uy) - ν*L(uy) + dy(p) = -A(uy) - Fy")
 problem.add_equation("dx(ux) + dy(uy) = 0", condition="(nx != 0) or (ny != 0)")
 problem.add_equation("p = 0", condition="(nx == 0) and (ny == 0)")
 
@@ -51,8 +51,8 @@ uy = solver.state['uy']
 if pathlib.Path('restart.h5').exists():
     solver.load_state('restart.h5', -1)
 else:
-    ux['g'] = ivf.ux_init
-    uy['g'] = ivf.uy_init
+    ux['g'] = init_f.ux_init
+    uy['g'] = init_f.uy_init
 
 # Integration parameters
 solver.stop_sim_time = param.stop_sim_time
@@ -66,6 +66,7 @@ i -= 1
 # Analysistf.float64
 snapshots = solver.evaluator.add_file_handler('./simulation_ml_%s/snapshots' % i, iter=param.snapshots_iter, max_writes=1, mode='overwrite')
 snapshots.add_system(solver.state)
+snapshots.add_task("dx(uy)-dy(ux)",name='w')
 
 scalars = solver.evaluator.add_file_handler('./simulation_ml_%s/scalars' % i, iter=param.scalars_iter, max_writes=100, mode='overwrite')
 scalars.add_task("integ(ke)", name='KE')
@@ -84,8 +85,8 @@ try:
         
         solver.step(dt)
 
-        ml.update_forcing(ux,uy,Fx,Fy,domain)
-        
+        Fx['g'],Fy['g'] = uf.update_forcing(ux,uy,domain)
+
         if (solver.iteration-1) % 10 == 0:
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
             logger.info('Total KE = %f' %flow.max('KE'))
