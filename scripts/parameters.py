@@ -5,8 +5,8 @@ import tensorflow as tf
 
 # Domain
 L = 1
-Npix = 256
-N_filter = 128
+Npix = 2048
+N_filter = 256
 Bx = By = (-np.pi*L, np.pi*L)
 Nx = Ny = Npix
 mesh = None
@@ -22,7 +22,7 @@ k = 1 / L
 k_scaling = 3/5
 
 # Perform machine learning correction
-correct_simulation = True
+correct_simulation = False
 
 # Temporal parameters
 dt = 0.0001
@@ -37,7 +37,7 @@ scalars_iter = int(0.01 // dt)
 datatype = tf.float64
 stacks = 1
 stack_width = 3
-filters_base = 10
+filters_base = 20
 output_channels = 3
 unet_kw = {}
 unet_kw['kernel_size'] = 1
@@ -47,9 +47,9 @@ unet_kw['batch_norm'] = False
 
 # Training parameters
 restore_epoch = 0
-epochs = 10
-snapshots = 2
-testing_size = 1
+epochs = 1000
+snapshots = 60
+testing_size = 15
 training_size = snapshots - testing_size
 perm_seed = 978
 tf_seed = 718
