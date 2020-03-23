@@ -1,29 +1,40 @@
 
+import os
 import numpy as np
 from mpi4py import MPI
 import time
 import pathlib
-import os
 
 from dedalus import public as de
 from dedalus.extras import flow_tools
-import sim_parameters as param
+import parameters as param
 import initial_field as init_f
+
+if param.correct_simulation == True:
+    import update_forcing as uf
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 # Bases and domain
-x_basis = de.Fourier('x', param.Nx, interval=param.Bx, dealias=3/2)
-y_basis = de.Fourier('y', param.Ny, interval=param.By, dealias=3/2)
+x_basis = de.Fourier('x', param.Nx, interval=param.Bx, dealias=1)
+y_basis = de.Fourier('y', param.Ny, interval=param.By, dealias=1)
 domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64, mesh=param.mesh)
+
+# Closure term forcing correction
+Fx = domain.new_field(name='Fx')
+Fy = domain.new_field(name='Fy')
+
+# Initial correction
+Fx['g'] = 0
+Fy['g'] = 0
 
 # Problem
 problem = de.IVP(domain, variables=['p','ux','uy'])
 problem.parameters['ν'] = param.ν
-problem.parameters['Fx'] = 0
-problem.parameters['Fy'] = 0
+problem.parameters['Fx'] = Fx
+problem.parameters['Fy'] = Fy
 problem.substitutions['ωz'] = "dx(uy) - dy(ux)"
 problem.substitutions['ke'] = "(ux*ux + uy*uy) / 2"
 problem.substitutions['en'] = "(ωz*ωz) / 2"
@@ -53,16 +64,20 @@ solver.stop_sim_time = param.stop_sim_time
 solver.stop_wall_time = param.stop_wall_time
 solver.stop_iteration = param.stop_iteration
 
-i = 0
-while os.path.exists("./simulation_dns_%s/" % i):
-    i += 1
-i -= 1
-# Analysis
-snapshots = solver.evaluator.add_file_handler('./simulation_dns_%s/snapshots' % i, iter=param.snapshots_iter, max_writes=1, mode='overwrite')
+if param.correct_simulation == True:
+    folder_string = 'corrected_simulation'
+    if os.path.exists(folder_string) == False:
+        os.mkdir(folder_string)
+else:
+    folder_string = 'uncorrected_simulation'
+    if os.path.exists(folder_string) == False:
+        os.mkdir(folder_string)
+# Analysist
+snapshots = solver.evaluator.add_file_handler(folder_string + '/snapshots', iter=param.snapshots_iter, max_writes=1, mode='overwrite')
 snapshots.add_system(solver.state)
-snapshots.add_task("dx(uy)-dy(ux)",name='w')
+snapshots.add_task("dx(uy) - dy(ux)",name='wz')
 
-scalars = solver.evaluator.add_file_handler('./simulation_dns_%s/scalars' % i, iter=param.scalars_iter, max_writes=100, mode='overwrite')
+scalars = solver.evaluator.add_file_handler(folder_string + '/scalars', iter=param.scalars_iter, max_writes=100, mode='overwrite')
 scalars.add_task("integ(ke)", name='KE')
 scalars.add_task("integ(en)", name='EN')
 
@@ -76,7 +91,11 @@ try:
     logger.info('Starting loop')
     start_time = time.time()
     while solver.ok:
+        
         solver.step(dt)
+        if param.correct_simulation == True:
+            Fx,Fy = uf.update_forcing(ux,uy,domain)
+
         if (solver.iteration-1) % 10 == 0:
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
             logger.info('Total KE = %f' %flow.max('KE'))

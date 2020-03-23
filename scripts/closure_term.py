@@ -1,13 +1,13 @@
 """
-Get closure term represented as the curl of the divergence of the stress tensor
+Compute closure term for vorticity formalism of the Navier-Stokes equation
 """
 
 from dedalus import public as de
 import parameters as param
 import numpy as np
 
-x_basis = de.Fourier('x', param.N, interval=(param.Bx[0], param.Bx[1]), dealias=1)
-y_basis = de.Fourier('y', param.N, interval=(param.Bx[0], param.By[1]), dealias=1)
+x_basis = de.Fourier('x', param.N_filter, interval=(param.Bx[0], param.Bx[1]), dealias=1)
+y_basis = de.Fourier('y', param.N_filter, interval=(param.Bx[0], param.By[1]), dealias=1)
 domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64)
 txx = domain.new_field(name='txx')
 tyy = domain.new_field(name='tyy')
@@ -17,7 +17,6 @@ dx = domain.bases[0].Differentiate
 dy = domain.bases[1].Differentiate
 
 def get_pi(tf_array):
-
     # Collect stress tensor components
     txx['g'] = tf_array[0,0]
     txy['g'] = tf_array[0,1]
@@ -29,5 +28,6 @@ def get_pi(tf_array):
     fy = (dx(txy) + dy(tyy)).evaluate()
     # Compute curl of subgrid force
     pi = (dx(fy) - dy(fx)).evaluate()
+    
     return pi['g']
     

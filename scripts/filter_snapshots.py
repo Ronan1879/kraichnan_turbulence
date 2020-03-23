@@ -51,9 +51,12 @@ def save_subgrid_fields(filename, N, comm, output_path):
     filt = filter.build_filter(domain, N)
     out['ux'] = filt_ux = filt(ux).evaluate()
     out['uy'] = filt_uy = filt(uy).evaluate()
-    # Compute resolved strain components
+
     dx = domain.bases[0].Differentiate
     dy = domain.bases[1].Differentiate
+    out['wz'] = wz = (dx(filt_uy) - dy(filt_ux)).evaluate()
+    
+    # Compute resolved strain components
     out['Sxx'] = Sxx = dx(filt_ux).evaluate()
     out['Syy'] = Syy = dy(filt_uy).evaluate()
     out['Sxy'] = Sxy = Syx = (0.5*(dx(filt_uy) + dy(filt_ux))).evaluate()
@@ -64,15 +67,15 @@ def save_subgrid_fields(filename, N, comm, output_path):
     out['tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
     out['txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
     # Compute subgrid force components
-    out['fx'] = fx = (dx(txx) + dy(tyx)).evaluate()
-    out['fy'] = fy = (dx(txy) + dy(tyy)).evaluate()
+    out['Fx'] = Fx = (dx(txx) + dy(tyx)).evaluate()
+    out['Fy'] = Fy = (dx(txy) + dy(tyy)).evaluate()
     # Compute curl of subgrid force
-    out['Pi'] = (dx(fy) - dy(fx)).evaluate()
+    out['Pi'] = (dx(Fy) - dy(Fx)).evaluate()
     # Save all outputs
     for key in out:
         field = out[key]
         field.require_coeff_space()
-        field.set_scales(N / params.N)
+        field.set_scales(N / params.Npix)
         out[key] = field_to_xarray(field, layout='g')
     ds = xarray.Dataset(out)
     input_path = pathlib.Path(filename)

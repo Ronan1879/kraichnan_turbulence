@@ -200,6 +200,7 @@ class Unet(tf.keras.Model):
                 # Apply stack
                 for layer in stack:
                     x = layer(x)
+                    
                 # Save partials
                 partials.append(x)
             return partials
@@ -213,7 +214,7 @@ class Unet(tf.keras.Model):
                     x = partials.pop()
                 else:
                     # Concatenate partial
-                    x = tf.concat([x, partials.pop()], axis=4)
+                    x = tf.concat([x, partials.pop()], axis=3)
                 # Apply stack
                 for layer in stack:
                     x = layer(x)
@@ -221,9 +222,11 @@ class Unet(tf.keras.Model):
 
         # Evaluate down for each input
         partials = [eval_down(x) for x in x_list]
+
         # Concatenate partials for each input
         partials = list(zip(*partials))
-        partials = [tf.concat(p, axis=4) for p in partials]
+
+        partials = [tf.concat(p, axis=3) for p in partials]
         # Evaluate up
         x = eval_up(partials)
         # Apply output layer

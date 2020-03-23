@@ -1,8 +1,11 @@
 """Load weights and model of neural net"""
 
 import unet
+
+# Trying to import only two functions from train_unet.py but somehow runs the whole script instead.
+#from train_unet import array_of_tf_components,deviatoric_part
 import numpy as np
-from ml_parameters import *
+from parameters import *
 import post as post_tools
 import tensorflow as tf
 tf.enable_eager_execution()
@@ -11,9 +14,8 @@ import xarray
 model = unet.Unet(stacks,stack_width,filters_base,output_channels,strides=(2,2), **unet_kw)
 
 # Loads the weights
-model.load_weights("checkpoints/unet-1000.index")
+model.load_weights("checkpoints/unet-" + str(epochs-1) + ".index")
 
-# Define cost function
 def array_of_tf_components(tf_tens):
     """Create object array of tensorflow packed tensor components."""
     # Collect components
@@ -37,7 +39,7 @@ def deviatoric_part(tens):
     for i in range(N):
         tens_d[i, i] = tens[i, i] - tr_tens / N
     return tens_d
-
+    
 def update_forcing(ux,uy,domain):
 
     txx = domain.new_field(name='txx')
@@ -63,7 +65,18 @@ def update_forcing(ux,uy,domain):
     tyx['g'] = tau_pred[1,0]
     tyy['g'] = tau_pred[1,1]
 
-    Fx_temp = (dx(txx) + dy(tyx)).evaluate()
-    Fy_temp = (dx(txy) + dy(tyy)).evaluate()
+    Fx = (dx(txx) + dy(tyx)).evaluate()
+    Fy = (dx(txy) + dy(tyy)).evaluate()
 
-    return Fx_temp['g'],Fy_temp['g']
+    diss_ux_grid = (dx(dx(ux)) + dy(dy(ux))).evaluate()['g']
+    diss_uy_grid = (dx(dx(uy)) + dy(dy(uy))).evaluate()['g']
+
+    correct_Fx = Fx['g']*diss_ux_grid > 0 
+    correct_Fy = Fy['g']*diss_uy_grid > 0
+
+    Fx['g'] *= correct_Fx 
+    Fy['g'] *= correct_Fy 
+
+    return Fx, Fy
+
+
