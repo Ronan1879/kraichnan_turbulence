@@ -5,7 +5,7 @@ Print parameters in a text file.
 from parameters import *
 
 # Save values of parameters
-text_file = open("parameters.txt" % i, "a")
+text_file = open("parameters.txt", "a")
 text_file.write("L = "+str(L)+'\n')
 text_file.write("N = "+str(N)+'\n')
 text_file.write("Bx = "+str(Bx)+'\n')
