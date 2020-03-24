@@ -6,7 +6,6 @@ import unet
 #from train_unet import array_of_tf_components,deviatoric_part
 import numpy as np
 from parameters import *
-import post as post_tools
 import tensorflow as tf
 tf.enable_eager_execution()
 import xarray
@@ -65,18 +64,18 @@ def update_forcing(ux,uy,domain):
     tyx['g'] = tau_pred[1,0]
     tyy['g'] = tau_pred[1,1]
 
-    Fx = (dx(txx) + dy(tyx)).evaluate()
-    Fy = (dx(txy) + dy(tyy)).evaluate()
+    Fx_temp = (dx(txx) + dy(tyx)).evaluate()
+    Fy_temp = (dx(txy) + dy(tyy)).evaluate()
 
     diss_ux_grid = (dx(dx(ux)) + dy(dy(ux))).evaluate()['g']
     diss_uy_grid = (dx(dx(uy)) + dy(dy(uy))).evaluate()['g']
 
-    correct_Fx = Fx['g']*diss_ux_grid > 0 
-    correct_Fy = Fy['g']*diss_uy_grid > 0
-
-    Fx['g'] *= correct_Fx 
-    Fy['g'] *= correct_Fy 
-
-    return Fx, Fy
+    correct_Fx = Fx_temp['g']*diss_ux_grid > 0 
+    correct_Fy = Fy_temp['g']*diss_uy_grid > 0
+    
+    Fx_temp['g'] *= correct_Fx 
+    Fy_temp['g'] *= correct_Fy
+    
+    return Fx_temp['g'], Fy_temp['g']
 
 

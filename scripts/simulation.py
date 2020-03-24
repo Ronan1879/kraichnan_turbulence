@@ -11,7 +11,8 @@ import parameters as param
 import initial_field as init_f
 
 if param.correct_simulation == True:
-    import update_forcing as uf
+	print("imported update_forcing.py")
+	import update_forcing as uf
 
 import logging
 logger = logging.getLogger(__name__)
@@ -94,7 +95,8 @@ try:
         
         solver.step(dt)
         if param.correct_simulation == True:
-            Fx,Fy = uf.update_forcing(ux,uy,domain)
+        	Fx['g'],Fy['g'] = uf.update_forcing(ux,uy,domain)
+            
 
         if (solver.iteration-1) % 10 == 0:
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
