@@ -106,7 +106,7 @@ class PeriodicConv2DTranspose(tf.keras.Model):
         # Pad with zeros to original expanded size
         x = tf.pad(x, self.output_padding)
         # Additively compress periodic padding, skipping first axis (batch)
-        for axis in range(3):
+        for axis in range(2):
             x = compress_axis_periodic(x, axis+1, self.pad_left[axis], self.pad_right[axis])
         # Batch normalization
         if self.batch_norm:
