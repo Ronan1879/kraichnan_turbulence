@@ -5,12 +5,19 @@ import tensorflow as tf
 
 # Domain
 L = 1
-Npix = 2048
+Npix = 256
+N_dns = 2048
 N_filter = 256
 Bx = By = (-np.pi*L, np.pi*L)
 Nx = Ny = Npix
 mesh = None
 
+grid_size = (Bx[1]-Bx[0])/N_filter
+
+# Smagorinsky parameters
+smag_coef = 0.3
+# Leith parameters
+leith_coef = 0.3
 
 # Physical parameters
 Re = 32000  # V * L / ν
@@ -21,14 +28,14 @@ k = 1 / L
 # Initial field proprety
 k_scaling = 3/5
 
-# Perform machine learning correction
-correct_simulation = False
+# closure correction model (None, 'leith', 'smagorinsky', 'ml')
+closure_type = None
 
 # Temporal parameters
 dt = 0.0001
 stop_sim_time = np.inf
 stop_wall_time = np.inf
-stop_iteration = int(8 // dt) + 1
+stop_iteration = int(4 // dt) + 1
 snapshots_iter = int(0.05 // dt)
 slices_iter = int(0.1 // dt)
 scalars_iter = int(0.01 // dt)
