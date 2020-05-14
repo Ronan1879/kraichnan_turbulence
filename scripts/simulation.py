@@ -10,10 +10,6 @@ from dedalus.extras import flow_tools
 import parameters as param
 import initial_field as init_f
 
-if param.correct_simulation == True:
-	print("imported update_forcing.py")
-	import update_forcing as uf
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -23,19 +19,11 @@ x_basis = de.Fourier('x', param.Nx, interval=param.Bx, dealias=1)
 y_basis = de.Fourier('y', param.Ny, interval=param.By, dealias=1)
 domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64, mesh=param.mesh)
 
-# Closure term forcing correction
-Fx = domain.new_field(name='Fx')
-Fy = domain.new_field(name='Fy')
-
-# Initial correction
-Fx['g'] = 0
-Fy['g'] = 0
-
 # Problem
 problem = de.IVP(domain, variables=['p','ux','uy'])
 problem.parameters['ν'] = param.ν
-problem.parameters['Fx'] = Fx
-problem.parameters['Fy'] = Fy
+problem.parameters['Fx'] = 0
+problem.parameters['Fy'] = 0
 problem.substitutions['ωz'] = "dx(uy) - dy(ux)"
 problem.substitutions['ke'] = "(ux*ux + uy*uy) / 2"
 problem.substitutions['en'] = "(ωz*ωz) / 2"
@@ -65,14 +53,6 @@ solver.stop_sim_time = param.stop_sim_time
 solver.stop_wall_time = param.stop_wall_time
 solver.stop_iteration = param.stop_iteration
 
-if param.correct_simulation == True:
-    folder_string = 'corrected_simulation'
-    if os.path.exists(folder_string) == False:
-        os.mkdir(folder_string)
-else:
-    folder_string = 'uncorrected_simulation'
-    if os.path.exists(folder_string) == False:
-        os.mkdir(folder_string)
 # Analysist
 snapshots = solver.evaluator.add_file_handler(folder_string + '/snapshots', iter=param.snapshots_iter, max_writes=1, mode='overwrite')
 snapshots.add_system(solver.state)
@@ -94,10 +74,7 @@ try:
     while solver.ok:
         
         solver.step(dt)
-        if param.correct_simulation == True:
-        	Fx['g'],Fy['g'] = uf.update_forcing(ux,uy,domain)
-            
-
+        
         if (solver.iteration-1) % 10 == 0:
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
             logger.info('Total KE = %f' %flow.max('KE'))
