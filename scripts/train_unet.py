@@ -95,8 +95,7 @@ def cost_function(inputs,outputs,labels):
     S_true = array_of_tf_components(inputs[0])
     tau_pred = deviatoric_part(array_of_tf_components(outputs))
     tau_true = deviatoric_part(array_of_tf_components(labels))
-
-    # Needs some work
+    
     # Compute cost of predicted closure term for vorticity formalism of the Navier-Stokes equation
     pi_pred = get_pi(tau_pred)
     pi_true = get_pi(tau_true)
@@ -179,8 +178,6 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
         # Status and outputs
         print('epoch.iter.save: %i.%i.%i, testing cost (Pi): %.3e' %(epoch, iteration, savenum, cost_pi.numpy()), flush=True)
 
-    #cost_epoch /= testing_size
-    #cost_epoch /= testing_size 
     testing_costs_pi.append(cost_epoch_pi/testing_size)
     testing_costs.append(cost_epoch/testing_size)
 
