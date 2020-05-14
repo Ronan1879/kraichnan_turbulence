@@ -54,7 +54,10 @@ def save_subgrid_fields(filename, N, comm, output_path):
 
     dx = domain.bases[0].Differentiate
     dy = domain.bases[1].Differentiate
+
+    # Compute vorticity and magnitude of vorticity gradient
     out['wz'] = wz = (dx(filt_uy) - dy(filt_ux)).evaluate()
+    out['grad_w_norm'] = np.sqrt(dx(wz)**2 + dy(wz)**2).evaluate()
     
     # Compute resolved strain components
     out['Sxx'] = Sxx = dx(filt_ux).evaluate()
@@ -67,10 +70,9 @@ def save_subgrid_fields(filename, N, comm, output_path):
     out['tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
     out['txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
     # Compute subgrid force components
-    out['Fx'] = Fx = (dx(txx) + dy(tyx)).evaluate()
-    out['Fy'] = Fy = (dx(txy) + dy(tyy)).evaluate()
-    # Compute curl of subgrid force
-    out['Pi'] = (dx(Fy) - dy(Fx)).evaluate()
+    out['fx'] = fx = (dx(txx) + dy(tyx)).evaluate()
+    out['fy'] = fy = (dx(txy) + dy(tyy)).evaluate()
+
     # Save all outputs
     for key in out:
         field = out[key]
