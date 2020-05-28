@@ -77,7 +77,7 @@ def save_subgrid_fields(filename, N, comm, output_path):
     for key in out:
         field = out[key]
         field.require_coeff_space()
-        field.set_scales(N / params.Npix)
+        field.set_scales(N / params.N)
         out[key] = field_to_xarray(field, layout='g')
     ds = xarray.Dataset(out)
     input_path = pathlib.Path(filename)
