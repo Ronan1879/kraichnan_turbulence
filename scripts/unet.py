@@ -3,6 +3,7 @@
 import numpy as np
 import tensorflow as tf
 
+tf.keras.backend.set_floatx('float64')
 
 def axslice(axis, start, stop, step=None):
     """Slice array along a specified axis."""
@@ -41,7 +42,7 @@ def compress_axis_periodic(tensor, axis, pad_left, pad_right):
 
 
 class PeriodicConv2D(tf.keras.Model):
-    """3D convolution layer with periodic padding."""
+    """2D convolution layer with periodic padding."""
 
     def __init__(self, filters, kernel_size, kernel_center, strides=(1,1), batch_norm=False, **kw):
         super().__init__()
@@ -81,7 +82,7 @@ class PeriodicConv2D(tf.keras.Model):
 
 
 class PeriodicConv2DTranspose(tf.keras.Model):
-    """3D transposed convolution layer with periodic padding."""
+    """2D transposed convolution layer with periodic padding."""
 
     def __init__(self, filters, kernel_size, kernel_center, strides=(1, 1), batch_norm=False, **kw):
         super().__init__()
