@@ -41,7 +41,6 @@ clb.ax.tick_params(labelsize=20)
 
 ax.set_xlabel("x",fontsize=20)
 ax.set_ylabel("y",fontsize=20)
-ax.set_title("Corrected t = 2 s",fontsize=22,y=1.03)
 
 plt.savefig('snapshot.png',dpi=300,bbox_inches='tight')
 
