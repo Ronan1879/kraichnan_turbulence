@@ -5,14 +5,12 @@ import tensorflow as tf
 
 # Domain
 L = 1
-Npix = 256
-N_dns = 2048
-N_filter = 256
+N = 128
 Bx = By = (-np.pi*L, np.pi*L)
-Nx = Ny = Npix
+Nx = Ny = N
 mesh = None
 
-grid_size = (Bx[1]-Bx[0])/N_filter
+grid_size = (Bx[1]-Bx[0])/N
 
 # Smagorinsky parameters
 smag_coef = 0.3
@@ -31,6 +29,7 @@ k_scaling = 3/5
 # closure correction model (None, 'leith', 'smagorinsky', 'ml')
 closure_type = None
 
+
 # Temporal parameters
 dt = 0.0001
 stop_sim_time = np.inf
@@ -43,8 +42,8 @@ scalars_iter = int(0.01 // dt)
 # Net parameters
 datatype = tf.float64
 stacks = 1
-stack_width = 3
-filters_base = 20
+stack_width = 2
+filters_base = 3
 output_channels = 3
 unet_kw = {}
 unet_kw['kernel_size'] = 1
@@ -54,9 +53,9 @@ unet_kw['batch_norm'] = False
 
 # Training parameters
 restore_epoch = 0
-epochs = 1000
-snapshots = 60
-testing_size = 15
+epochs = 20
+snapshots = 2
+testing_size = 1
 training_size = snapshots - testing_size
 perm_seed = 978
 tf_seed = 718
