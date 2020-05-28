@@ -1,17 +1,19 @@
 """Load weights and model of neural net and computes closure term for coarsed grain simulation"""
 
 import unet
-
 import numpy as np
 from parameters import *
 import tensorflow as tf
-tf.enable_eager_execution()
 import xarray
 
-model = unet.Unet(stacks,stack_width,filters_base,output_channels,strides=(2,2), **unet_kw)
+model = unet.Unet(stacks,stack_width,filters_base,output_channels, **unet_kw)
 
-# Loads the weights
-model.load_weights("checkpoints/unet-" + str(epochs-1) + ".index")
+checkpoint = tf.train.Checkpoint(net=model)
+checkpoint.restore("checkpoints/unet-" + str(epochs-1))
+
+# Call the model a first time to create variables. Once the variables are created, the checkpoint object
+# will be able to associate the weights from the checkpoint file with the correct model variables.
+model.call(np.zeros((1,1,Nx,Ny,output_channels)))
 
 def array_of_tf_components(tf_tens):
     """Create object array of tensorflow packed tensor components."""
