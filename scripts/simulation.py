@@ -53,12 +53,16 @@ solver.stop_sim_time = param.stop_sim_time
 solver.stop_wall_time = param.stop_wall_time
 solver.stop_iteration = param.stop_iteration
 
+folder_name = 'dns_simulation'
+if os.path.exists(folder_name) == False:
+    os.mkdir(folder_name)
+
 # Analysist
-snapshots = solver.evaluator.add_file_handler(folder_string + '/snapshots', iter=param.snapshots_iter, max_writes=1, mode='overwrite')
+snapshots = solver.evaluator.add_file_handler(folder_name + '/snapshots', iter=param.snapshots_iter, max_writes=1, mode='overwrite')
 snapshots.add_system(solver.state)
 snapshots.add_task("dx(uy) - dy(ux)",name='wz')
 
-scalars = solver.evaluator.add_file_handler(folder_string + '/scalars', iter=param.scalars_iter, max_writes=100, mode='overwrite')
+scalars = solver.evaluator.add_file_handler(folder_name + '/scalars', iter=param.scalars_iter, max_writes=100, mode='overwrite')
 scalars.add_task("integ(ke)", name='KE')
 scalars.add_task("integ(en)", name='EN')
 
