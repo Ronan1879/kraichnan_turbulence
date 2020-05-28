@@ -2,13 +2,9 @@
 
 import numpy as np
 import xarray
-#import tensorflow.compat.v1 as tf
-#tf.disable_v2_behavior()
 import tensorflow as tf
 import unet
 import time
-tf.enable_eager_execution()
-#tf.executing_eagerly()
 from parameters import *
 from closure_term import *
 import os
@@ -51,11 +47,9 @@ def load_data(savenum):
     return inputs, labels
 
 # Build network and optimizer
-tf.set_random_seed(tf_seed)
-#tf.random.set_seed(tf_seed)
+tf.random.set_seed(tf_seed)
 model = unet.Unet(stacks,stack_width,filters_base,output_channels, **unet_kw)
-optimizer = tf.train.AdamOptimizer(learning_rate)
-#optimizer = tf.optimizers.Adam(learning_rate)
+optimizer = tf.keras.optimizers.Adam(learning_rate)
 checkpoint = tf.train.Checkpoint(optimizer=optimizer, net=model)
 if restore_epoch:
     restore_path = f"{checkpoint_path}-{restore_epoch}"
@@ -96,7 +90,7 @@ def cost_function(inputs,outputs,labels):
     tau_pred = deviatoric_part(array_of_tf_components(outputs))
     tau_true = deviatoric_part(array_of_tf_components(labels))
     
-    # Compute cost of predicted closure term for vorticity formalism of the Navier-Stokes equation
+    # Compute cost of predicted closure term for vorticity formalism
     pi_pred = get_pi(tau_pred)
     pi_true = get_pi(tau_true)
     pi_diff = pi_true - pi_pred
@@ -144,19 +138,18 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
                 tf_outputs = model.call(tf_inputs)
                 cost, cost_pi = cost_function(tf_inputs,tf_outputs,tf_labels)
                 cost_epoch = tf.add(cost,cost_epoch)       
-                cost_epoch_pi = tf.add(cost_pi,cost_epoch_pi)
+            cost_epoch_pi = tf.add(cost_pi,cost_epoch_pi)
             
             # Status and outputs
             print('epoch.iter.save: %i.%i.%i, training cost (Pi): %.3e' %(epoch, iteration, savenum, cost_pi.numpy()), flush=True)
 
-    #cost_epoch = tf.divide(cost_epoch,training_size)
-    #cost_epoch_pi = tf.divide(cost_epoch_pi,training_size)
     weight_grads = tape.gradient(cost_epoch,model.variables)
-    optimizer.apply_gradients(zip(weight_grads,model.variables), global_step = tf.compat.v1.train.get_or_create_global_step())
+    optimizer.apply_gradients(zip(weight_grads,model.variables))
 
     print("Saving weights.", flush=True)
     checkpoint.save(checkpoint_path)
 
+    # Save the mean cost
     training_costs_pi.append(cost_epoch_pi/training_size)
     training_costs.append(cost_epoch/training_size)
 
@@ -177,15 +170,11 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
             cost_epoch_pi = tf.add(cost_pi,cost_epoch_pi)
         # Status and outputs
         print('epoch.iter.save: %i.%i.%i, testing cost (Pi): %.3e' %(epoch, iteration, savenum, cost_pi.numpy()), flush=True)
-
+    # Save the mean cost
     testing_costs_pi.append(cost_epoch_pi/testing_size)
     testing_costs.append(cost_epoch/testing_size)
 
-training_costs_pi = np.array(training_costs_pi)
-testing_costs_pi = np.array(testing_costs_pi)
-training_costs = np.array(training_costs)
-testing_costs = np.array(testing_costs)
-np.save('training_costs_pi.npy',training_costs_pi)
-np.save('testing_costs_pi.npy',testing_costs_pi)
-np.save('training_costs.npy',training_costs)
-np.save('testing_costs.npy',testing_costs)
+np.save('training_costs_pi.npy',np.array(training_costs_pi))
+np.save('testing_costs_pi.npy',np.array(testing_costs_pi))
+np.save('training_costs.npy',np.array(training_costs))
+np.save('testing_costs.npy',np.array(testing_costs))
