@@ -6,8 +6,8 @@ from dedalus import public as de
 import parameters as param
 import numpy as np
 
-x_basis = de.Fourier('x', param.N_filter, interval=(param.Bx[0], param.Bx[1]), dealias=1)
-y_basis = de.Fourier('y', param.N_filter, interval=(param.Bx[0], param.By[1]), dealias=1)
+x_basis = de.Fourier('x', param.N, interval=(param.Bx[0], param.Bx[1]), dealias=1)
+y_basis = de.Fourier('y', param.N, interval=(param.Bx[0], param.By[1]), dealias=1)
 domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64)
 txx = domain.new_field(name='txx')
 tyy = domain.new_field(name='tyy')
@@ -24,8 +24,8 @@ def get_pi(tf_array):
     tyy['g'] = tf_array[1,1]
 
     # Evaluate divergence of stress tensor
-    fx = (dx(txx) + dy(tyx)).evaluate()
-    fy = (dx(txy) + dy(tyy)).evaluate()
+    fx = dx(txx) + dy(tyx)
+    fy = dx(txy) + dy(tyy)
     # Compute curl of subgrid force
     pi = (dx(fy) - dy(fx)).evaluate()
     
