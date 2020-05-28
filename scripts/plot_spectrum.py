@@ -35,9 +35,9 @@ k = np.sqrt(np.abs(k[0])**2 + np.abs(k[1])**2)
 
 pspec = (np.abs(ux_coef)**2 + np.abs(uy_coef)**2)/2
 
-n_count,bins = np.histogram(k.flatten(),bins=params.Npix)
+n_count,bins = np.histogram(k.flatten(),bins=params.N)
 
-n, bins = np.histogram(k.flatten(),bins=params.Npix,weights=pspec.flatten())
+n, bins = np.histogram(k.flatten(),bins=params.N,weights=pspec.flatten())
 
 # Remove data points where the power is below threshold. This arises from plotting issues
 bad_indices = np.where(n < threshold)[0]
