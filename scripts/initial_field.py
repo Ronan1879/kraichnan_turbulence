@@ -10,8 +10,8 @@ from dedalus import public as de
 import parameters as param
 
 # Create bases and domain
-x_basis = de.Fourier('x', param.Npix, interval=(param.Bx[0], param.Bx[1]), dealias=1)
-y_basis = de.Fourier('y', param.Npix, interval=(param.By[0], param.By[1]), dealias=1)
+x_basis = de.Fourier('x', param.Nx, interval=(param.Bx[0], param.Bx[1]), dealias=1)
+y_basis = de.Fourier('y', param.Ny, interval=(param.By[0], param.By[1]), dealias=1)
 domain = de.Domain([x_basis, y_basis], grid_dtype=np.float64)
 
 # Generate random vorticity field using red noise
