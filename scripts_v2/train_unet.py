@@ -93,13 +93,13 @@ train_path = 'training_costs.npy'
 test_path = 'testing_costs.npy'
 
 if os.path.exists(train_path):
-    training_costs = np.load(train_path).tolist()
+    training_costs = np.load(train_path)[:initial_epoch].tolist()
     print("Loaded training costs list")
 else:
     training_costs = []
 
 if os.path.exists(test_path):
-    testing_costs = np.load(test_path).tolist()
+    testing_costs = np.load(test_path)[:initial_epoch].tolist()
     print("Loaded testing costs list")
 else:
     testing_costs = []
