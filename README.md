@@ -1,58 +1,25 @@
-# Machine learning 2D incompressible turbulence
+Brief description of new python files
 
-This repository contains the scripts used in simulating 2D incompressible turbulence as well as using machine learning to correct coarsed grained simulations
+## create_uxuy.py
+Contains functions to create ux uy fields
 
+## filter_functions.py
+Contains functions of different filters for coarse graining
 
-Here is a description of the functionality of each python script :
+## filter_snapshots.py
+Filters high resolution DNS snapshots and stores important variables in data files
 
-# closure_term.py
+## fluid_functions.py
+Contains functions for computing different fluid quantities
 
-Computes the closure term for the vorticity formalism of the Navier-Stokes equation from the stress tensor.
+## forcing_functions.py
+Contains functions for computing different analytic closures
 
-# initial_field.py
+## generate_data.py
+Generates inputs.npy and labels.npy from synthetic data to use for machine learning
 
-Generates initial vorticity field based on random noise with fourier scaling. Computes the ux and uy velocity fields based on it.
+## misc_functions.py
+Contains other general functions
 
-# parameters.py
-
-Contains all parameters used by simulations, machine learning model training, etc.
-
-# plot_single_cost.py
-
-Plots cost function of a single machine learning model.
-
-# plot_multiple_cost.py
-
-Plots cost function of multiple machine learning models.
-
-# plot_snapshot.py
-
-Plots a snapshot from the simulation
-
-# plot_spectrum.py
-
-Plots kinetic energy power spectrum of a simulation snapshot
-
-# print_params.py
-
-Prints in a .txt file all the current parameters
-
-# simulation.py
-
-Runs simulation. In parameters.py, there is a boolean parameter called "correct_simulation" that will determine if the user wants to apply machine learning correction to the simulation.
-
-# ml_forcing.py
-
-Computes the correction predicted by a trained machine learning model and returns the updated forcing to low_res_simulation.py
-
-# leith_forcing.py
-
-Computes the correction predicted by the Leith model and returns the updated forcing to low_res_simulation.py
-
-# smagorinsky_forcing.py
-
-Computes the correction predicted by the Smagorinsky model and returns the updated forcing to low_res_simulation.py
-
-# train_unet_leith.py
-
-Trains the neural network in predicting the Leith model instead of the subgrid stress tensor
+## ml_forcing.py
+Script included by simulation.py in order to update forcing based on trained machine learning models
