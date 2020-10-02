@@ -8,16 +8,15 @@ from parameters import *
 from misc_functions import deviatoric_part
 from misc_functions import array_of_tf_components
 
-import os
 from filter_functions import *
 from post import *
 from create_uxuy import *
 import xarray
 import fluid_functions as ff
 
-# Divide training data
-# Randomly permute snapshots
-rand = np.random.RandomState(seed = perm_seed)
+# Set random seeds
+np.random.seed(rand_seed)
+tf.random.set_seed(tf_seed)
 
 
 def create_inputs_labels(Nsnapshots):
@@ -49,7 +48,7 @@ def create_inputs_labels(Nsnapshots):
 
     return inputs, labels
 
-def cost_function(outputs,labels):
+def cost_function(labels,outputs):
     # Load components into object arrays, take deviatoric part of stresses
     #S_true = array_of_tf_components(inputs[0])
     tau_pred = deviatoric_part(array_of_tf_components(outputs))
@@ -71,90 +70,32 @@ def cost_function(outputs,labels):
 
     return L2_tau_d_error
 
-# Build network and optimizer
-model = unet.Unet(stacks,stack_width,filters_base,output_channels, **unet_kw)
-optimizer = tf.keras.optimizers.Adam(learning_rate)
-checkpoint = tf.train.Checkpoint(optimizer=optimizer, net=model)
-
-if restore_counter:
-    restore_path = f"{checkpoint_path}-{restore_counter}"
-    checkpoint.restore(restore_path)#.assert_consumed()
-    print('Restored from {}'.format(restore_path))
-else:
-    print('Initializing from scratch.')
-initial_epoch = save_interval*checkpoint.save_counter.numpy() + 1
-
-num_batches = training_size//batch_size
 
 train_inputs, train_labels = create_inputs_labels(training_size)
 test_inputs, test_labels = create_inputs_labels(testing_size)
 
-train_path = 'training_costs.npy'
-test_path = 'testing_costs.npy'
+# buffer_size must be atleast equal or bigger than training_size
+buffer_size = training_size
 
-if os.path.exists(train_path):
-    training_costs = np.load(train_path)[:initial_epoch].tolist()
-    print("Loaded training costs list")
-else:
-    training_costs = []
+train_dataset = tf.data.Dataset.from_tensor_slices((train_inputs,train_labels)).shuffle(buffer_size).batch(batch_size)
+test_dataset = tf.data.Dataset.from_tensor_slices((test_inputs,test_labels)).batch(batch_size)
 
-if os.path.exists(test_path):
-    testing_costs = np.load(test_path)[:initial_epoch].tolist()
-    print("Loaded testing costs list")
-else:
-    testing_costs = []
+# Build network and optimizer
+model = unet.Unet(stacks,stack_width,filters_base,output_channels, **unet_kw)
+
+model.compile(optimizer = tf.keras.optimizers.Adamax(learning_rate), loss = cost_function)
+
+# " mode = 'min' " saves model with lowest test_dataset loss, also known as validation loss
+model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+	save_weights_only=False,
+    monitor='val_loss',
+    mode='min',
+    save_best_only=True)
 
 
-for epoch in range(initial_epoch,initial_epoch+epochs):
-    print(f"Beginning epoch {epoch}", flush=True)
+filename = 'data.csv'
+csv_logger_callback = tf.keras.callbacks.CSVLogger(filename, separator=",", append=True)
 
-    # Train
-    cost_epoch = 0
-    rand.seed(perm_seed + epoch)
-
-    batch_idx = rand.permutation(np.arange(train_inputs.shape[0])).reshape((-1,batch_size))
-    for iteration, snapshot_num in enumerate(batch_idx):
-
-        inputs_0 = train_inputs[snapshot_num]
-        labels_0 = train_labels[snapshot_num]
-
-        with tf.device(device):
-            # Combine inputs to predict layer outputs
-            tf_inputs = [tf.cast(inputs_0,datatype)]
-            tf_labels = tf.cast(labels_0,datatype)
-
-            with tf.GradientTape() as tape:
-                tape.watch(model.variables)
-                tf_outputs = model.call(tf_inputs)
-                cost = cost_function(tf_outputs,tf_labels)
-                cost_epoch = tf.add(cost_epoch,cost)
-            weight_grads = tape.gradient(cost,model.variables)
-            optimizer.apply_gradients(zip(weight_grads,model.variables))            
-
-            # Status and outputs
-            print('epoch.iter.snapshots: {}.{}.{}, training cost : {}'.format(epoch, iteration, snapshot_num, cost.numpy()), flush=True)
-
-    # Save training cost
-    training_costs.append(cost_epoch/num_batches)
-
-    with tf.device(device):
-        # Combine inputs to predict layer outputs
-        tf_inputs = [tf.cast(test_inputs,datatype)]
-        tf_labels = tf.cast(test_labels,datatype)
-
-        tf_outputs = model.call(tf_inputs)
-        cost = cost_function(tf_outputs,tf_labels)
-        
-        # Status and outputs
-        print('epoch : {}, testing cost : {}'.format(epoch, cost.numpy()), flush=True)
-    
-    # Save testing cost
-    testing_costs.append(cost)
-
-    if epoch % save_interval == 0:
-        print("Saving weights.", flush=True)
-        checkpoint.save(checkpoint_path)
-        np.save(train_path,np.array(training_costs))
-        np.save(test_path,np.array(testing_costs))
+model.fit(train_dataset, epochs = epochs, validation_data = test_dataset, callbacks=[model_checkpoint_callback,csv_logger_callback])
 
 

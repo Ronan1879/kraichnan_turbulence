@@ -38,7 +38,7 @@ slices_iter = int(0.1 // dt)
 scalars_iter = int(0.01 // dt)
 
 # Net parameters
-datatype = tf.float64
+datatype = tf.float32
 stacks = 1
 stack_width = 1
 filters_base = 12
@@ -51,17 +51,14 @@ unet_kw['use_bias'] = True
 unet_kw['batch_norm'] = False
 
 # Training parameters
-restore_counter = 0
-save_interval = 5
-epochs = 100
-snapshots = 2
+epochs = 10
+snapshots = 5
 testing_size = 1
 training_size = snapshots - testing_size
-batch_size = 1
-perm_seed = 978
+batch_size = 2
+rand_seed = 978
 tf_seed = 718
 learning_rate = 5e-4
 checkpoint_path = "checkpoints/checkpoint"
 diss_cost = 0
-device = "/device:GPU:0"
-device = "/cpu:0"
+device = "/cpu:0"#"/device:GPU:0"

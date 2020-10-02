@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 
-tf.keras.backend.set_floatx('float64')
+tf.keras.backend.set_floatx('float32')
 
 def axslice(axis, start, stop, step=None):
     """Slice array along a specified axis."""
@@ -220,6 +220,10 @@ class Unet(tf.keras.Model):
                 for layer in stack:
                     x = layer(x)
             return x
+
+
+        # This line is necessary if only one input is configured in dataset object
+        x_list = [x_list]
 
         # Evaluate down for each input
         partials = [eval_down(x) for x in x_list]
