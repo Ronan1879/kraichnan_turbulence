@@ -37,28 +37,38 @@ snapshots_iter = int(0.05 // dt)
 slices_iter = int(0.1 // dt)
 scalars_iter = int(0.01 // dt)
 
-# Net parameters
-datatype = tf.float32
-stacks = 1
-stack_width = 1
-filters_base = 12
+# U-Net parameters
+#datatype = tf.float32
+#stacks = 1
+#stack_width = 1
+#filters_base = 12
+#input_channels = 4
+#output_channels = 3
+#unet_kw = {}
+#unet_kw['kernel_size'] = 3
+#unet_kw['activation'] = 'relu'
+#unet_kw['use_bias'] = True
+#unet_kw['batch_norm'] = False
+
+# Sequential model parameters
+hidden_layers = 3
+filters = 12
+kernel_size = 3
+kernel_center = 0
+activation_func = 'relu'
+resume_training = False
 input_channels = 4
 output_channels = 3
-unet_kw = {}
-unet_kw['kernel_size'] = 3
-unet_kw['activation'] = 'relu'
-unet_kw['use_bias'] = True
-unet_kw['batch_norm'] = False
 
 # Training parameters
 epochs = 10
-snapshots = 5
+snapshots = 2
 testing_size = 1
 training_size = snapshots - testing_size
-batch_size = 2
+batch_size = 1
 rand_seed = 978
 tf_seed = 718
 learning_rate = 5e-4
-checkpoint_path = "checkpoints/checkpoint"
+checkpoint_path = "checkpoint"
 diss_cost = 0
 device = "/cpu:0"#"/device:GPU:0"
