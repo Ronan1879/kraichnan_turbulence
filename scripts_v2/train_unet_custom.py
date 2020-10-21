@@ -5,7 +5,7 @@ import tensorflow as tf
 import unet
 import time
 from parameters import *
-
+import csv
 from misc_functions import deviatoric_part
 from misc_functions import array_of_tf_components
 
@@ -41,8 +41,11 @@ def cost_function(outputs,labels):
     return cost
 
 
-train_path = 'training_costs.npy'
-test_path = 'testing_costs.npy'
+train_path = 'training_costs.csv'
+test_path = 'testing_costs.csv'
+
+train_cost_file = open(train_path,"ab")
+test_cost_file = open(test_path,"ab")
 
 inputs_path = 'inputs.npy'
 labels_path = 'labels.npy'
@@ -55,8 +58,8 @@ manager = tf.train.CheckpointManager(checkpoint, checkpoint_path, max_to_keep=20
 
 if resume_training == True:
     checkpoint.restore(manager.latest_checkpoint)#.assert_consumed()
-    training_costs = np.load(train_path).tolist()
-    testing_costs = np.load(test_path).tolist()
+    #training_costs = np.load(train_path).tolist()
+    #testing_costs = np.load(test_path).tolist()
     print('Restored from {}'.format(manager.latest_checkpoint))
 else:
     training_costs = []
@@ -103,8 +106,7 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
     # Status and outputs
     print('epoch: %i, training cost : %.3e' %(epoch, cost_epoch.numpy()), flush=True)
 
-    # Save training cost
-    training_costs.append(cost_epoch*(batch_size//training_size))
+    np.savetxt(train_cost_file,[cost_epoch.numpy()*(batch_size//training_size)],fmt='%1.4f')
 
     with tf.device(device):
         # Combine inputs to predict layer outputs
@@ -118,17 +120,17 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
         print('epoch: %i, testing cost : %.3e' %(epoch, cost_epoch.numpy()), flush=True)
 
     # Save testing cost
-    testing_costs.append(cost)
+    np.savetxt(test_cost_file,[cost.numpy()],fmt='%1.4f')
 
     if best_cost > cost_epoch.numpy():
-        model.save_weights(checkpoint_path+'/best_epoch')
+        model.save_weights(checkpoint_path + '/best_epoch')
         best_cost = cost_epoch.numpy()
     manager.save()
-    np.save(train_path,np.array(training_costs))
-    np.save(test_path,np.array(testing_costs))
+
 
 end_time = time.time()
 
-print("Total training time: %.3e" %(end_time-start_time))
+print("Total training time: %.3e" % (end_time-start_time))
 
-
+train_cost_file.close()
+test_cost_file.close()
