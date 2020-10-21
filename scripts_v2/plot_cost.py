@@ -5,15 +5,15 @@ import matplotlib.pyplot as plt
 from parameters import *
 
 #filename = 'data.csv'
-train_file_name = "training_costs.npy"
-test_file_name = "testing_costs.npy"
+train_cost_file = "training_costs.csv"
+test_cost_file = "testing_costs.csv"
 
 #epochs = np.loadtxt(filename,delimiter=',',skiprows=1)[:,0]
 #train_cost = np.loadtxt(filename,delimiter=',',skiprows=1)[:,1]
 #test_cost = np.loadtxt(filename,delimiter=',',skiprows=1)[:,2]
 
-train_cost = np.load(train_file_name)/batch_size
-test_cost = np.load(test_file_name)/testing_size
+train_cost = np.loadtxt(train_cost_file)/batch_size
+test_cost = np.loadtxt(test_cost_file)/testing_size
 
 fig, ax = plt.subplots(1,1,figsize=(10,8))
 
