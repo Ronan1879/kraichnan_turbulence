@@ -48,30 +48,37 @@ def save_subgrid_fields(filename, N, comm, output_path):
     ux = post_tools.load_field(filename, domain, 'ux', 0)
     uy = post_tools.load_field(filename, domain, 'uy', 0)
     # Filter velocities
-    filt = filter.build_filter(domain, N)
+    filt = filter_functions.build_gaussian_filter(domain, N, params.epsilon)
     out['ux'] = filt_ux = filt(ux).evaluate()
     out['uy'] = filt_uy = filt(uy).evaluate()
 
-    dx = domain.bases[0].Differentiate
-    dy = domain.bases[1].Differentiate
+    #dx = domain.bases[0].Differentiate
+    #dy = domain.bases[1].Differentiate
 
     # Compute vorticity and magnitude of vorticity gradient
-    out['wz'] = wz = (dx(filt_uy) - dy(filt_ux)).evaluate()
-    out['grad_w_norm'] = np.sqrt(dx(wz)**2 + dy(wz)**2).evaluate()
+    #out['wz'] = wz = (dx(filt_uy) - dy(filt_ux)).evaluate()
+    #out['grad_w_norm'] = np.sqrt(dx(wz)**2 + dy(wz)**2).evaluate()
     
     # Compute resolved strain components
-    out['Sxx'] = Sxx = dx(filt_ux).evaluate()
-    out['Syy'] = Syy = dy(filt_uy).evaluate()
-    out['Sxy'] = Sxy = Syx = (0.5*(dx(filt_uy) + dy(filt_ux))).evaluate()
+    #out['Sxx'] = Sxx = dx(filt_ux).evaluate()
+    #out['Syy'] = Syy = dy(filt_uy).evaluate()
+    #out['Sxy'] = Sxy = Syx = (0.5*(dx(filt_uy) + dy(filt_ux))).evaluate()
 
-    out['S_norm'] = np.sqrt(Sxx*Sxx + Sxy*Sxy + Syx*Syx + Syy*Syy).evaluate()
-    # Compute subgrid stress components
-    out['txx'] = txx = filt(filt_ux*filt_ux - ux*ux).evaluate()
-    out['tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
-    out['txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
+    #out['S_norm'] = np.sqrt(Sxx*Sxx + Sxy*Sxy + Syx*Syx + Syy*Syy).evaluate()
+    
+    # Compute explicit subgrid stress components
+    out['im_txx'] = txx = filt(filt_ux*filt_ux - ux*ux).evaluate()
+    out['im_tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
+    out['im_txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
+
+    # Compute implicit subgrid stress components
+    out['ex_txx'] = txx = (filt_ux*filt_ux - filt(ux*ux)).evaluate()
+    out['ex_tyy'] = tyy = (filt_uy*filt_uy - filt(uy*uy)).evaluate()
+    out['ex_txy'] = txy = tyx = (filt_ux*filt_uy - filt(ux*uy)).evaluate()
+
     # Compute subgrid force components
-    out['fx'] = fx = (dx(txx) + dy(tyx)).evaluate()
-    out['fy'] = fy = (dx(txy) + dy(tyy)).evaluate()
+    #out['fx'] = fx = (dx(txx) + dy(tyx)).evaluate()
+    #out['fy'] = fy = (dx(txy) + dy(tyy)).evaluate()
 
     # Save all outputs
     for key in out:
