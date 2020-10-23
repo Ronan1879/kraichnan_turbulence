@@ -6,8 +6,9 @@ import tensorflow as tf
 # Domain
 L = 1
 Bx = By = (-np.pi*L, np.pi*L)
-Nx = Ny = 2048
-N = 256
+N = 2048
+Nx = Ny = N
+N_filter = 256
 mesh = None
 
 grid_size = (Bx[1]-Bx[0])/N
