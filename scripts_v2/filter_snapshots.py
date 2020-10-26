@@ -67,14 +67,14 @@ def save_subgrid_fields(filename, N, comm, output_path):
     #out['S_norm'] = np.sqrt(Sxx*Sxx + Sxy*Sxy + Syx*Syx + Syy*Syy).evaluate()
     
     # Compute explicit subgrid stress components
-    out['im_txx'] = txx = filt(filt_ux*filt_ux - ux*ux).evaluate()
-    out['im_tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
-    out['im_txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
+    out['ex_txx'] = txx = filt(filt_ux*filt_ux - ux*ux).evaluate()
+    out['ex_tyy'] = tyy = filt(filt_uy*filt_uy - uy*uy).evaluate()
+    out['ex_txy'] = txy = tyx = filt(filt_ux*filt_uy - ux*uy).evaluate()
 
     # Compute implicit subgrid stress components
-    out['ex_txx'] = txx = (filt_ux*filt_ux - filt(ux*ux)).evaluate()
-    out['ex_tyy'] = tyy = (filt_uy*filt_uy - filt(uy*uy)).evaluate()
-    out['ex_txy'] = txy = tyx = (filt_ux*filt_uy - filt(ux*uy)).evaluate()
+    out['im_txx'] = txx = (filt_ux*filt_ux - filt(ux*ux)).evaluate()
+    out['im_tyy'] = tyy = (filt_uy*filt_uy - filt(uy*uy)).evaluate()
+    out['im_txy'] = txy = tyx = (filt_ux*filt_uy - filt(ux*uy)).evaluate()
 
     # Compute subgrid force components
     #out['fx'] = fx = (dx(txx) + dy(tyx)).evaluate()
