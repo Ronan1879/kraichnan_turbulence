@@ -58,12 +58,8 @@ manager = tf.train.CheckpointManager(checkpoint, checkpoint_path, max_to_keep=20
 
 if resume_training == True:
     checkpoint.restore(manager.latest_checkpoint)#.assert_consumed()
-    #training_costs = np.load(train_path).tolist()
-    #testing_costs = np.load(test_path).tolist()
     print('Restored from {}'.format(manager.latest_checkpoint))
 else:
-    training_costs = []
-    testing_costs = []
     print('Initializing from scratch.')
 initial_epoch = checkpoint.save_counter.numpy() + 1
 
@@ -82,7 +78,6 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
     # Train
     cost_epoch = 0
     rand.seed(perm_seed + epoch)
-
 
     batch_idx = rand.permutation(np.arange(train_inputs.shape[0])).reshape((-1,batch_size))
     for iteration, snapshot_num in enumerate(batch_idx):
@@ -106,7 +101,7 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
     # Status and outputs
     print('epoch: %i, training cost : %.3e' %(epoch, cost_epoch.numpy()), flush=True)
 
-    np.savetxt(train_cost_file,[cost_epoch.numpy()*(batch_size//training_size)],fmt='%1.4f')
+    np.savetxt(train_cost_file,[cost_epoch.numpy()/training_size],fmt='%1.4f')
 
     with tf.device(device):
         # Combine inputs to predict layer outputs
@@ -117,14 +112,14 @@ for epoch in range(initial_epoch,initial_epoch+epochs):
         cost = cost_function(tf_outputs,tf_labels)
 
         # Status and outputs
-        print('epoch: %i, testing cost : %.3e' %(epoch, cost_epoch.numpy()), flush=True)
+        print('epoch: %i, testing cost : %.3e' %(epoch, cost.numpy()), flush=True)
 
     # Save testing cost
-    np.savetxt(test_cost_file,[cost.numpy()],fmt='%1.4f')
+    np.savetxt(test_cost_file,[cost.numpy()/testing_size],fmt='%1.4f')
 
-    if best_cost > cost_epoch.numpy():
+    if best_cost > cost.numpy():
         model.save_weights(checkpoint_path + '/best_epoch')
-        best_cost = cost_epoch.numpy()
+        best_cost = cost.numpy()
     manager.save()
 
 
