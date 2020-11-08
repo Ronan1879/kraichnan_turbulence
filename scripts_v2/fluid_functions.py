@@ -99,7 +99,7 @@ def explicit_subgrid_stress(domain,filter,ux,uy):
     tyy = filter(filt_uy*filt_uy - uy*uy).evaluate()
     txy = tyx = filter(filt_ux*filt_uy - ux*uy).evaluate()
 
-    tau = txx,tyy,txy
+    tau = [txx,tyy,txy]
     
     # Deviatoric subgrid stress
     tr_tau = (tau[0] + tau[1]).evaluate()
