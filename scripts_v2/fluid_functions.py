@@ -24,7 +24,7 @@ def vorticity(domain,ux,uy):
     dy = domain.bases[1].Differentiate
 
     # Compute vorticity
-    wz = (dx(ux) - dy(uy)).evaluate()
+    wz = (dx(uy) - dy(ux)).evaluate()
     wz.set_scales(1)
     return wz
 
