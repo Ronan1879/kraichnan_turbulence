@@ -8,10 +8,11 @@ import fluid_functions as ff
 from filter_functions import *
 from post import *
 from create_uxuy import *
+import matplotlib.pyplot as plt
 
 def create_inputs_labels(Nsnapshots):
     domain = build_domain(params)
-    filter = build_gaussian_filter(domain,N,epsilon)
+    filter = build_gaussian_filter(domain,N_filter,epsilon)
 
     inputs = np.zeros((Nsnapshots,N,N,input_channels))
     labels = np.zeros((Nsnapshots,N,N,output_channels))
@@ -24,11 +25,12 @@ def create_inputs_labels(Nsnapshots):
         input_fields = ff.uxuy_derivatives(domain,filt_ux,filt_uy)
         label_fields = ff.implicit_subgrid_stress(domain,filter,ux,uy)
 
+
         for input_field in input_fields:
             input_field.set_scales(N/Nx)
         for label_field in label_fields:
             label_field.set_scales(N/Nx)
-
+        
         input_list = [input_field['g'] for input_field in input_fields]
         label_list = [label_field['g'] for label_field in label_fields]
 
@@ -38,7 +40,7 @@ def create_inputs_labels(Nsnapshots):
 
     return inputs, labels
 
-inputs, labels = create_inputs_labels(5)
+inputs, labels = create_inputs_labels(1)
 
 np.save("inputs.npy",inputs)
 np.save("labels.npy",labels)
