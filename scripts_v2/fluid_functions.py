@@ -62,7 +62,7 @@ def magn_vorticity_grad(domain,ux,uy):
     dx = domain.bases[0].Differentiate
     dy = domain.bases[1].Differentiate
 
-    wz = vorticity(domain,ux,uy)[0]
+    wz = vorticity(domain,ux,uy)
     wz_grad_magn = np.sqrt(dx(wz)**2 + dy(wz)**2).evaluate()
 
     wz_grad_magn.set_scales(1)
